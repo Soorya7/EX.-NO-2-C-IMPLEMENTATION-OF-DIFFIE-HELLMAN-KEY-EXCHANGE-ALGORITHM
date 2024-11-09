@@ -18,47 +18,105 @@ To implement the Diffie-Hellman Key Exchange algorithm using C language.
   STEP-6: Now both of them compute their common secret key as the other one’s secret key power of a mod p.
   
 ## PROGRAM:
-```
-#include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
-long long int power(long long int a, long long int b,
-long long int P)
-{
-if (b == 1)
-return a;
-else
-return (((long long int)pow(a, b)) % P);
+int prime_checker(int p) {
+    if (p < 1) {
+        return -1;
+    } else if (p > 1) {
+        if (p == 2) {
+            return 1;
+        }
+        for (int i = 2; i < p; i++) {
+            if (p % i == 0) {
+                return -1;
+            }
+        }
+        return 1;
+    }
+    return -1;
 }
 
-int main()
-{
-long long int P, G, x, a, y, b, ka, kb;
-
-printf("Enter the value of P:");
-scanf("%lld",&P); 
-printf("The value of P : %lld\n", P);
-printf("Enter the value of G:");
-scanf("%lld",&G); 
-printf("The value of G : %lld\n\n", G);
-
-a = 4; 
-printf("The private key a for Alice : %lld\n", a);
-x = power(G, a, P); // gets the generated key
-
-b = 3; // b is the chosen private key
-printf("The private key b for Bob : %lld\n\n", b);
-y = power(G, b, P); // gets the generated key
-
-ka = power(y, a, P); // Secret key for Alice
-kb = power(x, b, P); // Secret key for Bob
-printf("Secret key for the Alice is : %lld\n", ka);
-printf("Secret Key for the Bob is : %lld\n", kb);
-return 0;
+int primitive_check(int g, int p, int *L, int size) {
+    for (int i = 1; i < p; i++) {
+        L[i - 1] = (int)pow(g, i) % p;
+    }
+    for (int i = 1; i < p; i++) {
+        int count = 0;
+        for (int j = 0; j < size; j++) {
+            if (L[j] == i) {
+                count++;
+            }
+        }
+        if (count > 1) {
+            return -1;
+        }
+    }
+    return 1;
 }
-```
+
+int main() {
+    int P, G, x1, x2;
+    int l[100]; // Assuming a maximum size for L
+
+    while (1) {
+        printf("Enter P : ");
+        scanf("%d", &P);
+        if (prime_checker(P) == -1) {
+            printf("Number Is Not Prime, Please Enter Again!\n");
+            continue;
+        }
+        break;
+    }
+
+    while (1) {
+        printf("Enter The Primitive Root Of %d : ", P);
+        scanf("%d", &G);
+        if (primitive_check(G, P, l, P - 1) == -1) {
+            printf("Number Is Not A Primitive Root Of %d, Please Try Again!\n", P);
+            continue;
+        }
+        break;
+    }
+
+    // Private Keys
+    printf("Enter The Private Key Of User 1 : ");
+    scanf("%d", &x1);
+    printf("Enter The Private Key Of User 2 : ");
+    scanf("%d", &x2);
+
+    while (1) {
+        if (x1 >= P || x2 >= P) {
+            printf("Private Key Of Both The Users Should Be Less Than %d!\n", P);
+            continue;
+        }
+        break;
+    }
+
+    // Calculate Public Keys
+    int y1 = (int)pow(G, x1) % P;
+    int y2 = (int)pow(G, x2) % P;
+
+    // Generate Secret Keys
+    int k1 = (int)pow(y2, x1) % P;
+    int k2 = (int)pow(y1, x2) % P;
+
+    printf("\nSecret Key For User 1 Is %d\nSecret Key For User 2 Is %d\n", k1, k2);
+
+    if (k1 == k2) {
+        printf("Keys Have Been Exchanged Successfully\n");
+    } else {
+        printf("Keys Have Not Been Exchanged Successfully\n");
+    }
+
+    return 0;
+    }
+
+
 ## OUTPUT:
-<img width="959" alt="Ex-9" src="https://github.com/user-attachments/assets/6fa2e108-ec53-420e-8d68-4a0e12d74214">
+![image](https://github.com/user-attachments/assets/6cf04b25-eb25-4eb4-80e4-7d22d253fbaa)
 
 ## RESULT:
   Thus the Diffie-Hellman key exchange algorithm had been successfully implemented using C
