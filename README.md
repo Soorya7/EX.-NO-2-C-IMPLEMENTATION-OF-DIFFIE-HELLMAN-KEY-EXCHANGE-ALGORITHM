@@ -18,105 +18,52 @@ To implement the Diffie-Hellman Key Exchange algorithm using C language.
   STEP-6: Now both of them compute their common secret key as the other one’s secret key power of a mod p.
   
 ## PROGRAM:
-#include <stdio.h>
-#include <stdlib.h>
+
+```
 #include <math.h>
 
-int prime_checker(int p) {
-    if (p < 1) {
-        return -1;
-    } else if (p > 1) {
-        if (p == 2) {
-            return 1;
-        }
-        for (int i = 2; i < p; i++) {
-            if (p % i == 0) {
-                return -1;
-            }
-        }
-        return 1;
-    }
-    return -1;
-}
-
-int primitive_check(int g, int p, int *L, int size) {
-    for (int i = 1; i < p; i++) {
-        L[i - 1] = (int)pow(g, i) % p;
-    }
-    for (int i = 1; i < p; i++) {
-        int count = 0;
-        for (int j = 0; j < size; j++) {
-            if (L[j] == i) {
-                count++;
-            }
-        }
-        if (count > 1) {
-            return -1;
-        }
-    }
-    return 1;
-}
-
 int main() {
-    int P, G, x1, x2;
-    int l[100]; // Assuming a maximum size for L
+    int p = 23; // Publicly known prime number
+    int g = 5;  // Publicly known primitive root
+    int x = 4;  // Alice's private key (only Alice knows this)
+    int y = 3;  // Bob's private key (only Bob knows this)
 
-    while (1) {
-        printf("Enter P : ");
-        scanf("%d", &P);
-        if (prime_checker(P) == -1) {
-            printf("Number Is Not Prime, Please Enter Again!\n");
-            continue;
-        }
-        break;
-    }
+    // Alice computes g^x mod p and sends it to Bob
+    double aliceSends = fmod(pow(g, x), p);
+    
+    // Bob computes (Alice's value)^y mod p to get the shared secret
+    double bobComputes = fmod(pow(aliceSends, y), p);
 
-    while (1) {
-        printf("Enter The Primitive Root Of %d : ", P);
-        scanf("%d", &G);
-        if (primitive_check(G, P, l, P - 1) == -1) {
-            printf("Number Is Not A Primitive Root Of %d, Please Try Again!\n", P);
-            continue;
-        }
-        break;
-    }
+    // Bob computes g^y mod p and sends it to Alice
+    double bobSends = fmod(pow(g, y), p);
 
-    // Private Keys
-    printf("Enter The Private Key Of User 1 : ");
-    scanf("%d", &x1);
-    printf("Enter The Private Key Of User 2 : ");
-    scanf("%d", &x2);
+    // Alice computes (Bob's value)^x mod p to get the shared secret
+    double aliceComputes = fmod(pow(bobSends, x), p);
 
-    while (1) {
-        if (x1 >= P || x2 >= P) {
-            printf("Private Key Of Both The Users Should Be Less Than %d!\n", P);
-            continue;
-        }
-        break;
-    }
+    // For verification: Both Alice and Bob's computed secrets should match
+    double sharedSecret = fmod(pow(g, (x * y)), p);
 
-    // Calculate Public Keys
-    int y1 = (int)pow(G, x1) % P;
-    int y2 = (int)pow(G, x2) % P;
+    printf("Diffie-Hellman Key Exchange Algorithm\n");
+    printf("Alice Sends : %.0f\n", aliceSends);
+    printf("Bob Computes : %.0f\n", bobComputes);
+    printf("Bob Sends : %.0f\n", bobSends);
+    printf("Alice Computes : %.0f\n", aliceComputes);
+    printf("Shared Secret : %.0f\n", sharedSecret);
 
-    // Generate Secret Keys
-    int k1 = (int)pow(y2, x1) % P;
-    int k2 = (int)pow(y1, x2) % P;
-
-    printf("\nSecret Key For User 1 Is %d\nSecret Key For User 2 Is %d\n", k1, k2);
-
-    if (k1 == k2) {
-        printf("Keys Have Been Exchanged Successfully\n");
+    // Check if the shared secrets match
+    if ((aliceComputes == sharedSecret) && (aliceComputes == bobComputes)) {
+        printf("Success: Shared Secrets Match! Shared Secret: %.0f\n", sharedSecret);
     } else {
-        printf("Keys Have Not Been Exchanged Successfully\n");
+        printf("Error: Shared Secrets do not Match\n");
     }
 
     return 0;
-    }
+}
 
+```
 
 ## OUTPUT:
-![image](https://github.com/user-attachments/assets/6cf04b25-eb25-4eb4-80e4-7d22d253fbaa)
+![Screenshot 2024-11-08 195620](https://github.com/user-attachments/assets/7006e090-330f-43fc-96c5-cb682d424a81)
 
 ## RESULT:
   Thus the Diffie-Hellman key exchange algorithm had been successfully implemented using C
